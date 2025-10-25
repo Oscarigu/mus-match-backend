@@ -18,6 +18,10 @@ const userSchema = new Schema(
       type: String,
       required: [true, "Name is required."],
     },
+    ranking:{
+      type: Number,
+      default: 1200
+    }
   },
   {
     // this second object adds extra properties: `createdAt` and `updatedAt`
