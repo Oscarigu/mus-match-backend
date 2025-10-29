@@ -16,7 +16,7 @@ const messageSchema = new Schema({
     type: Date,
     default: Date.now
   }
-}, { _id: false }); // no need for separate _id on each message
+}, { _id: false });
 
 const conversationSchema = new Schema({
   game: {
@@ -24,22 +24,39 @@ const conversationSchema = new Schema({
     ref: 'Game',
     required: true
   },
+
+  // Players participating in this conversation
   users: [{
     type: Schema.Types.ObjectId,
     ref: 'User',
     required: true
   }],
-  messages: [messageSchema]
+
+  messages: [messageSchema],
+
+  // 🔒 NEW FIELD: lock conversation until all 4 players joined
+  isLocked: {
+    type: Boolean,
+    default: true
+  }
 }, {
-  timestamps: true // adds createdAt and updatedAt
+  timestamps: true
 });
 
-// Optional: ensure all game users are part of the conversation
+// ✅ Validation: ensure users exist
 conversationSchema.pre('save', function(next) {
   if (!this.users || this.users.length === 0) {
     return next(new Error('Conversation must include users.'));
   }
   next();
 });
+
+// ✅ Optional helper: unlock when all 4 players are present
+conversationSchema.methods.unlockIfReady = async function() {
+  if (this.users.length === 4 && this.isLocked) {
+    this.isLocked = false;
+    await this.save();
+  }
+};
 
 module.exports = model('Conversation', conversationSchema);
