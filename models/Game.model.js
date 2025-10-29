@@ -17,6 +17,10 @@ const gameSchema = new Schema(
         required: true,
       },
     ],
+    localidad:{
+      type: String,
+      required: true,
+    },
     location: {
       type: String,
       required: true,
