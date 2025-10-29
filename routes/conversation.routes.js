@@ -56,4 +56,20 @@ router.post("/:conversationId/message", isAuthenticated, async (req, res) => {
   }
 });
 
+// Get all conversations or by game
+router.get('/', async (req, res) => {
+  try {
+    const { game } = req.query;
+    const filter = game ? { game } : {};
+    const conversations = await Conversation.find(filter)
+      .populate('game')
+      .populate('users')
+      .populate('messages.user');
+    res.json(conversations);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 module.exports = router;
