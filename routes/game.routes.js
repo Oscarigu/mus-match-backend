@@ -197,4 +197,36 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+// ✅ UPDATE game details (only host can edit)
+router.put("/:id", isAuthenticated, async (req, res) => {
+  try {
+    const userId = req.payload._id;
+    const { id } = req.params;
+    const { localidad, location, date } = req.body;
+
+    const game = await Game.findById(id);
+    if (!game) return res.status(404).json({ message: "Game not found" });
+
+    // Only host can update
+    if (game.host.toString() !== userId) {
+      return res.status(403).json({ message: "Only the host can edit this game" });
+    }
+
+    if (!localidad || !location || !date) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    game.localidad = localidad;
+    game.location = location;
+    game.date = date;
+
+    await game.save();
+
+    res.json({ message: "Game updated successfully", game });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 module.exports = router;
